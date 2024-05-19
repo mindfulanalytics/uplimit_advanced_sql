@@ -10,13 +10,13 @@
 -- Step 4: Use aggregate case when statements to get the part 1, 2, and 3 rows we are looking for
 -- Step 5: Report on final results, order by last_order_date desc and limit 100
 
-select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER;
+-- select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER;
 
-select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.LINEITEM;
+-- select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.LINEITEM;
 
-select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS;
+-- select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS;
 
-select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.PART;
+-- select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.PART;
 
 with auto_customers_urgent_orders as (
 -- Rows 29,752
@@ -104,6 +104,7 @@ from order_agg as oa
 inner join customer_top_3_parts ctp 
     on oa.c_custkey = ctp.c_custkey
 order by last_order_date desc, c_custkey
+limit 100
 
 ;
 
@@ -114,12 +115,15 @@ PART 2:
 Review the candidate's tech exercise below, and provide a one-paragraph assessment of the SQL quality. Provide examples/suggestions for improvement if you think the candidate could have chosen a better approach.
 
 - Q:Do you agree with the results returned by the query?
--A: I do not agree. The query returns 17,304 rows while my query returns 18,367 rows. Looking into the why, it looks like the query does a bunch of inner joins to the urgent_orders cte and filters each by price_rank. This filters out any automobile customers with urgent order who ordered less than 3 parts. Also, they only use one window row_number function. They should have used two, one to pull the top 3 orders based on order spent, and one to pull the top 3 parts based on part spend. The top_orders cte currently gives the total spent on the top 3 parts, not the total spent on the top 3 orders.
+-A: I do not agree. The query returns 17,304 rows while my query returns 18,367 rows. Looking into the why, it looks like the query does a bunch of inner joins to the urgent_orders cte and filters each by price_rank. 
+This filters out any automobile customers with urgent order who ordered less than 3 parts. Also, they only use one window row_number function. They should have used two, one to pull the top 3 orders based on order spent, 
+and one to pull the top 3 parts based on part spend. The top_orders cte currently gives the total spent on the top 3 parts, not the total spent on the top 3 orders.
 
 - Q: Is it easy to understand?
-- A: The query is easy to understand, but the use of aliases when referring to fields from specific tables, and better cte naming would have made it more readable. Also, the multiple self joins to the urgent_orders cte is a more costly way of achieving the result that pivoting or an aggregate case statements could also achieve.
+- A: The query is easy to understand, but the use of aliases when referring to fields from specific tables, and better cte naming would have made it more readable.
 
 - Q: Could the code be more efficient?
-- A: They use order by clauses in both ctes leading up to the final output. This is a costly clause that should only be added to the final cte to provide the report on the requested format. 
+- A: They use order by clauses in both ctes leading up to the final output. This costly clause should only be added to the final cte to provide the report on the requested format. Also, the multiple self joins 
+to the urgent_orders cte is a more costly way of achieving the result than pivoting or an aggregate case when statements could achieve.
 
 */
