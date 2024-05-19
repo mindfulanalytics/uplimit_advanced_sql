@@ -72,13 +72,13 @@ select
     c_custkey,
     max(case when part_spent_rank = 1 then o_orderkey end) as part_1_key,
     max(case when part_spent_rank = 1 then l_quantity end) as part_1_quantity,
-    max(case when part_spent_rank = 1 then l_extendedprice end) as part_1_price,
+    max(case when part_spent_rank = 1 then l_extendedprice end) as part_1_total_spent,
     max(case when part_spent_rank = 2 then o_orderkey end) as part_2_key,
     max(case when part_spent_rank = 2 then l_quantity end) as part_2_quantity,
-    max(case when part_spent_rank = 2 then l_extendedprice end) as part_2_price,
+    max(case when part_spent_rank = 2 then l_extendedprice end) as part_2_total_spent,
     max(case when part_spent_rank = 3 then o_orderkey end) as part_3_key,
     max(case when part_spent_rank = 3 then l_quantity end) as part_3_quantity,
-    max(case when part_spent_rank = 3 then l_extendedprice end) as part_3_price
+    max(case when part_spent_rank = 3 then l_extendedprice end) as part_3_total_spent
 from part_details
 group by 1
 
@@ -93,13 +93,13 @@ select
     total_spent,
     part_1_key,
     part_1_quantity,
-    part_1_price,
+    part_1_total_spent,
     part_2_key,
     part_2_quantity,
-    part_2_price,
+    part_2_total_spent,
     part_3_key,
     part_3_quantity,
-    part_3_price
+    part_3_total_spent
 from order_agg as oa
 inner join customer_top_3_parts ctp 
     on oa.c_custkey = ctp.c_custkey
@@ -113,6 +113,7 @@ limit 100
 -- | 61664     | 1998-08-02      | 4008259                   | 66226.90    | 4008259    | 32.00           | 48593.60     | 4008259    | 9.00            | 15603.57     |            |                 |              |
 -- | 64339     | 1998-08-02      | 2657508, 3988519, 4044354 | 585268.39   | 3988519    | 49.00           | 102556.51    | 3988519    | 44.00           | 83111.16     | 3988519    | 48.00           | 75582.24     |
 -- | 68000     | 1998-08-02      | 1290562, 2603169, 5277669 | 425661.73   | 1290562    | 50.00           | 69473.00     | 2603169    | 30.00           | 60719.70     | 2603169    | 40.00           | 52329.20     |
+
 
 ;
 
