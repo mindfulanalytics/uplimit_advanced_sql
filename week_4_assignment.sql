@@ -33,8 +33,17 @@ inner join SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS as o
 where 1=1 
     and c.c_mktsegment like 'AUTOMOBILE'
     and o.o_orderpriority like '1-URGENT'
-qualify total_order_price_rank <= 3
 order by c.c_custkey, o.o_totalprice desc 
+
+),
+
+last_order_date as (
+
+select 
+    c_custkey,
+    max(o_orderdate) as last_order_date
+from auto_customers_urgent_orders 
+group by 1
 
 ),
 
@@ -42,10 +51,10 @@ order_agg as (
 -- Number of rows 18,367
 select 
     c_custkey,
-    max(o_orderdate) as last_order_date,
     listagg(o_orderkey, ', ') within group (order by o_orderkey) as order_numbers,
     sum(o_totalprice) as total_spent
 from auto_customers_urgent_orders
+where total_order_price_rank <= 3
 group by 1 
 
 ),
@@ -100,19 +109,21 @@ select
     part_3_key,
     part_3_quantity,
     part_3_total_spent
-from order_agg as oa
+from last_order_date od 
+inner join order_agg as oa
+    on od.c_custkey = oa.c_custkey
 inner join customer_top_3_parts ctp 
     on oa.c_custkey = ctp.c_custkey
 order by last_order_date desc, c_custkey
-limit 5
+limit 100
 
 -- | C_CUSTKEY | LAST_ORDER_DATE | ORDER_NUMBERS             | TOTAL_SPENT | PART_1_KEY | PART_1_QUANTITY | PART_1_TOTAL_SPENT | PART_2_KEY | PART_2_QUANTITY | PART_2_TOTAL_SPENT | PART_3_KEY | PART_3_QUANTITY | PART_3_TOTAL_SPENT |
 -- |-----------|-----------------|---------------------------|-------------|------------|-----------------|--------------------|------------|-----------------|--------------------|------------|-----------------|--------------------|
+-- | 15781     | 1998-08-02      | 42981, 425573, 1327879    | 529689.47   | 1221216    | 47.00           | 73012.62           | 1327879    | 44.00           | 71001.04           | 42981      | 35.00           | 65898.00           |
+-- | 28180     | 1998-08-02      | 376579, 2663104, 3480130  | 966753.73   | 3480130    | 49.00           | 100791.53          | 3480130    | 49.00           | 95794.02           | 376579     | 47.00           | 77349.31           |
 -- | 44785     | 1998-08-02      | 1316198, 1327655, 3119652 | 628235.75   | 1316198    | 49.00           | 87992.24           | 1316198    | 43.00           | 86428.71           | 3119652    | 47.00           | 81064.66           |
 -- | 54955     | 1998-08-02      | 1340677, 1900676, 4240902 | 392276.69   | 4240902    | 40.00           | 71915.60           | 4240902    | 43.00           | 71447.94           | 1340677    | 33.00           | 55331.10           |
 -- | 61664     | 1998-08-02      | 4008259                   | 66226.90    | 4008259    | 32.00           | 48593.60           | 4008259    | 9.00            | 15603.57           |            |                 |                    |
--- | 64339     | 1998-08-02      | 2657508, 3988519, 4044354 | 585268.39   | 3988519    | 49.00           | 102556.51          | 3988519    | 44.00           | 83111.16           | 3988519    | 48.00           | 75582.24           |
--- | 68000     | 1998-08-02      | 1290562, 2603169, 5277669 | 425661.73   | 1290562    | 50.00           | 69473.00           | 2603169    | 30.00           | 60719.70           | 2603169    | 40.00           | 52329.20           |
 
 ;
 
