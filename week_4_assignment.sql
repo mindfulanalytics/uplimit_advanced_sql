@@ -33,7 +33,6 @@ inner join SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS as o
 where 1=1 
     and c.c_mktsegment like 'AUTOMOBILE'
     and o.o_orderpriority like '1-URGENT'
-order by c.c_custkey, o.o_totalprice desc 
 
 ),
 
